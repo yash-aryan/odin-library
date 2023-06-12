@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Table template</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./scripts.js" defer></script>
+</head>
+
+<body>
+  <div class="main-container">
+    <div class="bg-overlay" id="close-modal"></div>
+    <div class="header">
+      <h1>Odin Library</h1>
+    </div>
+    <div class="article">
+      <div class="book-card" data-index="idk">
+        <div class="title-container">
+          <h3>a1</h3>
+          <div class="delete-icon"></div>
+        </div>
+        <p>Author: <span>a1aaaaaaaaaaaaaaaaaaaaaaaaaaaaa</span></p>
+        <p>Pages: <span>-</span></p>
+        <div class="read-status">
+          <p>Status: <span class="read-status-true">Completed</span></p>
+          <div class="change-read-icon"></div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <form action="" id="form-element">
+        <div class="form-modal">
+          <fieldset>
+            <legend>Add a New Book</legend>
+            <div class="form-input">
+              <label for="input-title">Enter Book Title</label>
+              <input type="text" class="input-title" id="input-title" placeholder="The Hobbit" required>
+            </div>
+            <div class="form-input">
+              <label for="input-author">Enter Book Author</label>
+              <input type="text" class="input-author" id="input-author" placeholder="J. R. R. Tolkien" required>
+            </div>
+            <div class="form-input">
+              <label for="input-pages">Enter Pages</label>
+              <input type="number" class="input-pages" id="input-pages" placeholder="295">
+            </div>
+            <div class="form-input">
+              <label for="input-read">Did you complete it?</label>
+              <input type="checkbox" class="input-read" id="input-read">
+            </div>
+            <button type="submit" id="submit" class="btn-submit">Confirm</button>
+          </fieldset>
+        </div>
+        <button id="add-book" class="btn-addBook">Add New Book</button>
+      </form>
+    </div>
+  </div>
+</body>
+
+</html>
