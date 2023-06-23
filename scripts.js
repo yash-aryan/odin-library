@@ -1,162 +1,182 @@
 "use strict";
+// Module IIFE for Counter
+const counter = (() => {
+	let _count = 0;
 
-// DOM References
-const formModal_DOM = document.querySelector(".form-modal");
-const inputTitle_DOM = document.querySelector("#input-title");
-const inputAuthor_DOM = document.querySelector("#input-author");
-const inputPages_DOM = document.querySelector("#input-pages");
-const inputRead_DOM = document.querySelector("#input-read");
-const article_DOM = document.querySelector(".article");
-const bgOverlay_DOM = document.querySelector("#close-modal");
-const addBookBtn_DOM = document.querySelector("#add-book");
+	function increment() {
+		_count++;
+	}
 
-// Global Variables
+	function getCurrCount() {
+		return _count;
+	}
+
+	function setCount(value) {
+		_count = value;
+	}
+
+	return {
+		increment,
+		getCurrCount,
+		setCount
+	};
+})();
+
+// Module IIFE for Form Modal
+const formModal = (() => {
+	const _modal = document.querySelector(".form-modal");
+	const _bgOverlay = document.querySelector("#close-modal");
+	const _addBookBtn = document.querySelector("#add-book");
+	_addBookBtn.addEventListener("click", _open);
+	_bgOverlay.addEventListener("click", close);
+
+	function _open() {
+		_modal.style.display = "block";
+		_bgOverlay.style.display = "block";
+		_addBookBtn.style.display = "none";
+	}
+
+	function close() {
+		_modal.style.display = "none";
+		_bgOverlay.style.display = "none";
+		_addBookBtn.style.display = "block";
+	}
+
+	return {
+		close
+	};
+})();
+
+// Global
 let myLibrary = [];
-let count = 0;
+document.forms[0].addEventListener("submit", addBookToLibrary);
 
-// Global Event Listeners
-bgOverlay_DOM.addEventListener("click", closeFormModal);
-addBookBtn_DOM.addEventListener("click", openFormModal);
+// This Anonymous IIFE sets eventListener on elements in book-card
+(function () {
+	document.body.addEventListener("click", _modifyBookCard);
 
-// Runs only on form submit after validating inputs
-document.forms[0].addEventListener("submit", addBookToTheLibrary);
-
-// Event listener for "delete book" button, calls function deleteBook(node) with div.book-card as argument/node to be deleted from DOM
-document.body.addEventListener("click", (e) => {
-	if (e.target.closest(".delete-icon")) {
-		const bookDOM = e.target.closest(".book-card");
-		deleteBook(bookDOM);
+	// Runs different function depends on what element was clicked
+	function _modifyBookCard(e) {
+		const bookCard = e.target.closest(".book-card");
+		if (e.target.closest(".delete-icon")) {
+			_deleteBook(bookCard);
+		} else if (e.target.closest(".change-read-icon")) {
+			_changeReadStatus(bookCard);
+		}
 	}
-});
 
-document.body.addEventListener("click", (e) => {
-	if (e.target.closest(".change-read-icon")) {
-		const bookDOM = e.target.closest(".book-card");
-		changeReadStatus(bookDOM);
+	function _changeReadStatus(bookCard) {
+		const book = myLibrary[bookCard.dataset.id];
+		const readStatus = bookCard.children[3].children[0].children[0];
+		if (book.read) {
+			readStatus.classList.remove(`${book.getInfo("readClassName")}`);
+			book.read = false;
+			readStatus.textContent = `${book.getInfo("read")}`;
+			readStatus.classList.add(`${book.getInfo("readClassName")}`);
+		} else {
+			readStatus.classList.remove(`${book.getInfo("readClassName")}`);
+			book.read = true;
+			readStatus.textContent = `${book.getInfo("read")}`;
+			readStatus.classList.add(`${book.getInfo("readClassName")}`);
+		}
 	}
-});
 
-function openFormModal(e) {
-	e.preventDefault();
-	formModal_DOM.style.display = "block";
-	addBookBtn_DOM.style.display = "none";
-	bgOverlay_DOM.style.display = "block";
-}
-
-function closeFormModal() {
-	formModal_DOM.style.display = "none";
-	addBookBtn_DOM.style.display = "block";
-	bgOverlay_DOM.style.display = "none";
-}
-
-function Book(id, title, author, pages, read, dom) {
-	this.id = id;
-	this.title = title;
-	this.author = author;
-	this.pages = pages;
-	this.read = read;
-}
-
-Book.prototype.getInfo = function (type) {
-	switch (type) {
-		case "id":
-			return this.id;
-
-		case "title":
-			return this.title;
-
-		case "author":
-			return this.author;
-
-		case "pages":
-			return this.pages;
-
-		case "read":
-			if (this.read) return "Completed";
-			return "Not Read";
-
-		case "readClassName":
-			if (this.read) return "read-status-true";
-			return "read-status-false";
-
-		default:
-			return console.log("Wrong input to switch case");
+	// This function removes the selcted book from the Array & DOM
+	function _deleteBook(bookCard) {
+		myLibrary.splice(bookCard.dataset.id, 1); // Removes book from myLibrary Array
+		bookCard.remove(); // Deletes div.book-card from DOM
+		_updateBookId();
 	}
-};
+
+	// This function updates book.id & data-id with their new position in Array
+	function _updateBookId() {
+		myLibrary.forEach((element, index) => {
+			document.querySelector(`[data-id="${element.id}"]`).dataset.id = index;
+			element.id = index;
+		});
+		counter.setCount(myLibrary.length);
+	}
+})();
 
 // Function that runs on Form Submit
-function addBookToTheLibrary(e) {
+function addBookToLibrary(e) {
 	e.preventDefault();
-	closeFormModal();
+
+	class Book {
+		constructor(id, title, author, pages, read) {
+			this.id = id;
+			this.title = title;
+			this.author = author;
+			this.pages = pages;
+			this.read = read;
+		}
+
+		getInfo(type) {
+			switch (type) {
+				case "id":
+					return this.id;
+
+				case "title":
+					return this.title;
+
+				case "author":
+					return this.author;
+
+				case "pages":
+					return this.pages;
+
+				case "read":
+					if (this.read) return "Completed";
+					return "Not Read";
+
+				case "readClassName":
+					if (this.read) return "read-status-true";
+					return "read-status-false";
+
+				default:
+					return console.log("Wrong input to switch case");
+			}
+		}
+	}
+
+	const inputTitle = document.querySelector("#input-title");
+	const inputAuthor = document.querySelector("#input-author");
+	const inputPages = document.querySelector("#input-pages");
+	const inputRead = document.querySelector("#input-read");
+	const article = document.querySelector(".article");
 
 	// Create object instance of Book
 	const book = new Book(
-		count, // id
-		inputTitle_DOM.value, // title
-		inputAuthor_DOM.value, // author
-		inputPages_DOM.value, // pages
-		inputRead_DOM.checked // read status
+		counter.getCurrCount(), // id
+		inputTitle.value, // title
+		inputAuthor.value, // author
+		inputPages.value, // pages
+		inputRead.checked // read status
 	);
 
-	// book gets added to myLibrary Array
+	// instance gets pushed into myLibrary Array
 	myLibrary.push(book);
-	createBookDOM(book);
-	++count;
-	// Reset form inputs for any next book
+	counter.increment();
 	document.querySelector("#form-element").reset();
-}
+	formModal.close();
 
-// Creates book-card on DOM for the given book instance
-function createBookDOM(book) {
-	article_DOM.innerHTML += `
-  <div class="book-card" data-index="${book.getInfo("id")}">
-    <div class="title-container">
-      <h3>${book.getInfo("title")}</h3>
-      <div class="delete-icon"></div>
-    </div>
-    <p>Author: <span>${book.getInfo("author")}</span></p>
-    <p>Pages: <span>${book.getInfo("pages")}</span></p>
-    <div class="read-status">
-			<p>Status: <span class="${book.getInfo("readClassName")}">${book.getInfo("read")}</span></p>
-			<div class="change-read-icon"></div>
+	// This Anonymous IIFE creates book-card on DOM of the instance
+	(function (book) {
+		article.innerHTML += `
+		<div class="book-card" data-id="${book.getInfo("id")}">
+			<div class="title-container">
+				<h3>${book.getInfo("title")}</h3>
+				<div class="delete-icon"></div>
+			</div>
+			<p>Author: <span>${book.getInfo("author")}</span></p>
+			<p>Pages: <span>${book.getInfo("pages")}</span></p>
+			<div class="read-status">
+				<p>Status: <span class="${book.getInfo("readClassName")}">${book.getInfo(
+			"read"
+		)}</span></p>
+				<div class="change-read-icon"></div>
+			</div>
 		</div>
-  </div>
-  `;
-}
-
-// This function runs when user clicks delete book icon
-// that book is removed from the Array & DOM
-function deleteBook(nodeToBeDeleted) {
-	myLibrary.splice(nodeToBeDeleted.dataset.index, 1); // Removes book from myLibrary Array
-	nodeToBeDeleted.remove(); // Deletes div.book-card from DOM
-	updateBookDataIndex();
-}
-
-// After deletion, all books get new index position in Array, which is mismatch from their stored id
-// This function updates book.id & data-index for all remaining books in Array
-function updateBookDataIndex() {
-	myLibrary.forEach((element) => {
-		const newIndex = myLibrary.indexOf(element);
-		document.querySelector(`[data-index="${element.id}"]`).dataset.index = newIndex;
-		element.id = newIndex;
-	});
-	count = myLibrary.length;
-}
-
-function changeReadStatus(node) {
-	const book = myLibrary[node.dataset.index];
-	if (book.read) {
-		const readStatus = node.children[3].children[0].children[0];
-		readStatus.classList.remove(`${book.getInfo("readClassName")}`);
-		book.read = false;
-		readStatus.textContent = `${book.getInfo("read")}`;
-		readStatus.classList.add(`${book.getInfo("readClassName")}`);
-	}
-	else {
-		const readStatus = node.children[3].children[0].children[0];
-		readStatus.classList.remove(`${book.getInfo("readClassName")}`);
-		book.read = true;
-		readStatus.textContent = `${book.getInfo("read")}`;
-		readStatus.classList.add(`${book.getInfo("readClassName")}`);
-	}
+		`;
+	})(book);
 }
